@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión - Inventario</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href="./css/styles.css">
-    <script src="./js/main.js"></script>
-
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="login-container">
@@ -20,6 +18,14 @@
             <div class="mb-3">
                 <label for="password" class="form-label">Contraseña:</label>
                 <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <div class="mb-3">
+                <label for="role" class="form-label">Rol:</label>
+                <select class="form-select" id="role" name="role" required>
+                    <option value="usuario">Usuario</option>
+                    <option value="administrador">Administrador</option>
+                    <option value="superadministrador">Superadministrador</option>
+                </select>
             </div>
             <button type="submit" class="btn btn-primary w-100">Iniciar Sesión</button>
         </form>
