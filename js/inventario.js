@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
     const productTableBody = document.getElementById("productTableBody");
     const addProductBtn = document.getElementById("addProductBtn");
     const productModal = new bootstrap.Modal(document.getElementById("productModal"));
@@ -13,18 +13,24 @@ document.addEventListener("DOMContentLoaded", function () {
         productosFiltrados.forEach((producto, index) => {
             const row = document.createElement("tr");
             row.innerHTML = `
-                <td>${index + 1}</td>
+                <td>${producto.id}</td>
                 <td>${producto.nombre}</td>
                 <td>${producto.cantidad}</td>
                 <td>${producto.precio}</td>
                 <td>${producto.categoria}</td>
                 <td>
-                    <button class="btn btn-warning btn-sm edit-btn" data-index="${index}">Editar</button>
-                    <button class="btn btn-danger btn-sm delete-btn" data-index="${index}">Eliminar</button>
+                    <button class="btn btn-warning btn-sm edit-btn" data-index="${producto.id}">Editar</button>
+                    <button class="btn btn-danger btn-sm delete-btn" data-index="${producto.id}">Eliminar</button>
                 </td>
             `;
             productTableBody.appendChild(row);
         });
+    }
+
+    // Obtener productos del servidor
+    async function cargarProductos() {
+        productos = await getProducts();
+        renderizarProductos();
     }
 
     // Mostrar modal para agregar producto
@@ -36,7 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Envío del formulario de producto (Agregar o Editar)
-    productForm.addEventListener("submit", (event) => {
+    productForm.addEventListener("submit", async (event) => {
         event.preventDefault();
         const nombre = document.getElementById("productName").value;
         const cantidad = document.getElementById("productQuantity").value;
@@ -46,21 +52,21 @@ document.addEventListener("DOMContentLoaded", function () {
         const nuevoProducto = { nombre, cantidad, precio, categoria };
 
         if (productForm.getAttribute("data-editing") === "true") {
-            const index = productForm.getAttribute("data-index");
-            productos[index] = nuevoProducto;
+            const id = productForm.getAttribute("data-index");
+            await updateProduct(id, nuevoProducto);
         } else {
-            productos.push(nuevoProducto);
+            await addProduct(nuevoProducto);
         }
 
-        renderizarProductos();
+        cargarProductos();
         productModal.hide();
     });
 
     // Delegar eventos de edición y eliminación
-    productTableBody.addEventListener("click", (event) => {
+    productTableBody.addEventListener("click", async (event) => {
         if (event.target.classList.contains("edit-btn")) {
-            const index = event.target.getAttribute("data-index");
-            const producto = productos[index];
+            const id = event.target.getAttribute("data-index");
+            const producto = productos.find(p => p.id == id);
 
             document.getElementById("productName").value = producto.nombre;
             document.getElementById("productQuantity").value = producto.cantidad;
@@ -69,12 +75,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
             document.getElementById("productModalLabel").textContent = "Editar Producto";
             productForm.setAttribute("data-editing", "true");
-            productForm.setAttribute("data-index", index);
+            productForm.setAttribute("data-index", id);
             productModal.show();
         } else if (event.target.classList.contains("delete-btn")) {
-            const index = event.target.getAttribute("data-index");
-            productos.splice(index, 1);
-            renderizarProductos();
+            const id = event.target.getAttribute("data-index");
+            await deleteProduct(id);
+            cargarProductos();
         }
     });
 
@@ -88,6 +94,6 @@ document.addEventListener("DOMContentLoaded", function () {
         renderizarProductos(productosFiltrados);
     });
 
-    // Renderizar productos iniciales (si los hubiera)
-    renderizarProductos();
+    // Cargar productos al cargar la página
+    cargarProductos();
 });
